@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="/">← Back</a>
+<h2>{{ lead.contact_name }} — {{ lead.company }}</h2>
+<div class="row">
+  <span class="pill">Stage: {{ lead.stage }}</span>
+  <span class="pill">Score: {{ "%.0f"|format(lead.score) }}</span>
+</div>
+<p><b>Title:</b> {{ lead.title or "—" }} | <b>Email:</b> {{ lead.email }} | <b>Site:</b> {{ lead.website or "—" }}</p>
+<p><b>Notes:</b> {{ lead.notes or "—" }}</p>
+
+<div class="grid" style="margin-top:16px">
+  <div class="card">
+    <h3>Score Lead</h3>
+    <form
+      hx-post="/lead/{{ lead.id }}/score"
+      hx-trigger="click from:#scoreBtn"
+      hx-target="#scoreResult"
+      hx-swap="innerHTML"
+    >
+      <label>Industry</label>
+      <input type="number" name="industry_fit" value="0.4" step="0.1" max="1" min="0">
+      <label>Size</label>
+      <input type="number" name="size_fit" value="0.2" step="0.1" max="1" min="0">
+      <label>Intent</label>
+      <input type="number" name="intent_signals" value="0.3" step="0.1" max="1" min="0">
+      <label>Data</label>
+      <input type="number" name="data_quality" value="0.1" step="0.1" max="1" min="0">
+    </form>
+    <button id="scoreBtn">Run with Grok</button>
+    <div id="scoreResult" class="row" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <h3>Generate Outreach</h3>
+    <form id="msgForm" hx-post="/lead/{{ lead.id }}/message" hx-target="#msgOut" hx-swap="innerHTML">
+      <input name="tone" value="concise, helpful, human"/>
+      <input name="call_to_action" value="Would you be open to a 20-minute intro call this week?"/>
+      <textarea name="extra_context" placeholder="Add context (recent fundraising, stack, hiring, etc.)"></textarea>
+      <button>Draft Email</button>
+    </form>
+    <pre id="msgOut" style="margin-top:8px"></pre>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:16px">
+  <div class="card">
+    <h3>Activity</h3>
+    <ul>
+      {% for a in lead.activities|sort(attribute="created_at", reverse=True) %}
+      <li><b>{{ a.created_at.strftime("%Y-%m-%d %H:%M") }}</b> — {{ a.type }} — {{ a.detail }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Stage</h3>
+    <form method="post" action="/lead/{{ lead.id }}/stage">
+      <select name="stage">
+        {% for s in ["new","qualified","contacted","meeting","won","lost"] %}
+        <option value="{{ s }}" {% if s == lead.stage %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <button>Update</button>
+    </form>
+
+    <h3 style="margin-top:16px">Schedule Meeting</h3>
+    <form method="post" action="/lead/{{ lead.id }}/meeting">
+      <input name="when" placeholder="When" value="Next Tue 2pm CT"/>
+      <input name="link" placeholder="Calendar link" value="https://cal.example/xai"/>
+      <button>Log Meeting</button>
+    </form>
+
+    <h3 style="margin-top:16px">Quick Evals</h3>
+    <button hx-post="/evals/run" hx-target="#evals" hx-swap="innerHTML">Run</button>
+    <div id="evals" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<h3>Messages</h3>
+<ul>
+  {% for m in lead.messages|sort(attribute="created_at", reverse=True) %}
+  <li>
+    <b>{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</b> — {{ m.role }}
+    <pre>{{ m.content }}</pre>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

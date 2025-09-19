@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Grok-powered SDR</h1>
+<form method="get" class="row">
+  <input name="q" value="{{ q }}" placeholder="Search leads/company/notes…"/>
+  <button>Search</button>
+</form>
+
+<div class="grid" style="margin-top:12px">
+  <div class="card">
+    <h3>Leads</h3>
+    <table>
+      <tr><th>Company</th><th>Contact</th><th>Score</th><th>Stage</th></tr>
+      {% for l in leads %}
+      <tr>
+        <td><a href="/lead/{{l.id}}">{{ l.company }}</a></td>
+        <td>{{ l.contact_name }} ({{ l.title or "" }})</td>
+        <td>{{ "%.0f"|format(l.score) }}</td>
+        <td><span class="pill">{{ l.stage }}</span></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Add Lead</h3>
+    <form method="post" action="/leads">
+      <input name="company" placeholder="Company" required/><br/><br/>
+      <input name="contact_name" placeholder="Contact name" required/><br/><br/>
+      <input name="email" placeholder="Email" required/><br/><br/>
+      <input name="title" placeholder="Title"/><br/><br/>
+      <input name="website" placeholder="Website"/><br/><br/>
+      <textarea name="notes" placeholder="Notes"></textarea><br/><br/>
+      <button>Add</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
