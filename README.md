@@ -53,6 +53,23 @@ cd grok-sdr
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
+```
+
+### Grok API Key Setup
+```bash
+# create a local env file
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` and set:
+```ini
+XAI_API_KEY=xai-*******************************
+XAI_MODEL=grok-4-0709        # or grok-4-latest
+XAI_BASE_URL=https://api.x.ai
+```
+
+- `backend/app/grok_client.py` loads `backend/.env` via `python-dotenv`; no shell export is required for dev.
+- Ensure secrets are not committed: `.env` is gitignored. If it appears in `git status`, run `git rm --cached backend/.env`.
 
 ### Run (Dev)
 ```bash
